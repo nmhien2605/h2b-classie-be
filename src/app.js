@@ -10,6 +10,7 @@ const session = require('express-session');
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 const groupsRouter = require('./routes/groups');
+const presentationsRouter = require('./routes/presentations')
 const { default: useDatabase } = require('./services/database');
 
 const corsOptions = {
@@ -46,6 +47,7 @@ useDatabase();
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/groups', groupsRouter);
+app.use('/presentations', presentationsRouter);
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
