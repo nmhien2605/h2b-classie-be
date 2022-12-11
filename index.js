@@ -22,6 +22,14 @@ app.set('port', port);
 var server = http.createServer(app);
 
 /**
+ * Create Socket server.
+ */
+
+const io = require('socket.io')(server, { cors: { origin: '*' } });
+const ioSocketServer = require('./src/services/socket');
+ioSocketServer(io);
+
+/**
  * Listen on provided port, on all network interfaces.
  */
 
