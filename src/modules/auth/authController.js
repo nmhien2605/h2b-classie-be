@@ -84,7 +84,7 @@ export const generateAccessToken = async (dataForAccessToken) => {
     );
     return accessToken
 }
-export const handleLogin = async (req, res) => {
+export const loginDefault = async (req, res) => {
     const { email, password } = req.body;
     const user = await findUserByEmail(email);
     console.log(user);
@@ -117,20 +117,15 @@ export const handleLogin = async (req, res) => {
 
     //     refreshToken = user.refreshToken;
     // }
-    const userInfo = {
-        email: user.email,
-        id: user._id,
-        avatarURL: user.avatarURL,
-        isActive: user.isActive,
-        displayName: user.name
-
-    }
+    const { password: _, ...userInfo } = user.toObject();
     res.cookie('accessToken', accessToken);
     res.cookie('id', user._id);
     res.cookie('displayName', user.name ? user.name : user.email);
     res.cookie('email', user.email);
-    return res.status(200).redirect(`${clientURL}/getinfo?token=${accessToken}&user=${JSON.stringify(userInfo)}`);
-
+    return res.status(200).send({
+        msg: 'Đăng nhập thành công.',
+        user: userInfo
+    });
 }
 export const loginGoogle = async (req, res) => {
 
@@ -146,27 +141,22 @@ export const loginGoogle = async (req, res) => {
             .status(402)
             .send({ msg: 'Đăng nhập không thành công, vui lòng thử lại.' });
     }
-
-    const userInfo = {
-        email: req.user.email,
-        id: req.user._id,
-        avatarURL: req.user.avatarURL,
-        isActive: req.user.isActive,
-        displayName: req.user.name
-
-    }
-    console.log("im here: ", JSON.stringify(req.user));
+    const { user } = req;
+    const { password: _, ...userInfo } = user.toObject();
     res.cookie('accessToken', accessToken);
     res.cookie('id', req.user._id);
     res.cookie('displayName', req.user.name);
     res.cookie('email', req.user.email);
-    res.redirect(`${clientURL}/getinfo?token=${accessToken}&user=${JSON.stringify(userInfo)}`);
+    return res.redirect(`${clientURL}/getinfo?token=${accessToken}&user=${JSON.stringify(userInfo)}`);
 }
 export const logout = async (req, res) => {
-    res.clearCookie('accessToken');
-    res.clearCookie('id');
-    res.clearCookie('displayName');
-    res.clearCookie('email');
-
-    return res.redirect(successURL);
+    if (req.cookies) {
+        res.clearCookie('accessToken');
+        res.clearCookie('id');
+        res.clearCookie('displayName');
+        res.clearCookie('email');
+    }
+    return res.status(200).send({
+        msg: "Logout thành công",
+    });
 }
