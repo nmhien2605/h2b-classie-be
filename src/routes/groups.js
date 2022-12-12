@@ -1,8 +1,10 @@
 // import verifyJWTToken from '../../middleware/verifyJWTToken.js';
 import { roleCheckMW } from "../middlewares/roleCheck.mw.js";
 import * as GroupController from "../modules/group/groupController.js";
+
+const express = require("express");
 const { isUserAuthenticated } = require("../modules/auth/auth.mdw");
-var express = require("express");
+
 const router = express.Router();
 
 // @route GET /

@@ -16,18 +16,18 @@ passport.use(new GoogleStrategy({
     const initUser = {
         email: profile.emails[0].value,
         name: profile.displayName,
-        avatarURL: profile.photos[0].value,
-        googleId: profile.id,
-
+        avatarUrl: profile.photos[0].value,
+        password: "",
+        isActive: true
     }
-    //find or create
+    // find or create
     const account = await userModel.findUserByEmail(initUser.email);
     // update token
     if (!account) {
-        userModel.createUser({ ...initUser, isActive: true }, {
+        userModel.createUser({ ...initUser }, {
             success: (data) => {
                 console.log("create google account:", data);
-                return done(null, initUser.email);
+                return done(null, data);
             },
             error: (e) => {
                 console.log(e);
@@ -35,11 +35,16 @@ passport.use(new GoogleStrategy({
             }
         })
     }
-    done(null, account);
+    else {
+        if (!account.isActive) {
+            await userModel.updateUserInfo({ _id: account._id, isActive: true })
+        }
+        done(null, account);
+    }
 }
 ))
 passport.serializeUser((user, done) => {
-    console.log("serializeUser :", user);
+    // console.log("serializeUser :", user);
     done(null, user);
 });
 
