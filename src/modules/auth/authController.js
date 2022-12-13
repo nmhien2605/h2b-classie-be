@@ -9,7 +9,7 @@ const verify = promisify(jwt.verify).bind(jwt);
 const bcrypt = require('bcrypt');
 // const randToken = require('rand-token');
 // const cookie = require('cookies');
-
+const clientURL = "http://localhost:3000";
 const saltRounds = 10;
 export const createAccount = async (req, res) => {
 
@@ -84,17 +84,17 @@ export const generateAccessToken = async (dataForAccessToken) => {
     );
     return accessToken
 }
-export const handleLogin = async (req, res) => {
+export const loginDefault = async (req, res) => {
     const { email, password } = req.body;
     const user = await findUserByEmail(email);
     console.log(user);
     if (!user) {
-        return res.status(401).send('Email không tồn tại.');
+        return res.status(401).send({ msg: 'Email không tồn tại.' });
     }
 
     const isPasswordValid = bcrypt.compareSync(password, user.password);
     if (!isPasswordValid) {
-        return res.status(403).send('Mật khẩu không chính xác.');
+        return res.status(403).send({ msg: 'Mật khẩu không chính xác.' });
     }
 
     const dataForAccessToken = {
@@ -107,9 +107,8 @@ export const handleLogin = async (req, res) => {
     if (!accessToken) {
         return res
             .status(402)
-            .send('Đăng nhập không thành công, vui lòng thử lại.');
+            .send({ msg: 'Đăng nhập không thành công, vui lòng thử lại.' });
     }
-
     // let refreshToken = randToken.generate(jwtVariable.refreshTokenSize);
     // if (!user.refreshToken) {
 
@@ -118,18 +117,46 @@ export const handleLogin = async (req, res) => {
 
     //     refreshToken = user.refreshToken;
     // }
+    const { password: _, ...userInfo } = user.toObject();
+    res.cookie('accessToken', accessToken);
+    res.cookie('id', user._id);
+    res.cookie('displayName', user.name ? user.name : user.email);
+    res.cookie('email', user.email);
     return res.status(200).send({
         msg: 'Đăng nhập thành công.',
-        data: {
-            user: {
-                id: user._id,
-                email: user.email,
-                name: user.name
-            },
-            accessToken
-        }
+        user: userInfo
     });
 }
-export const logout = async (req, res) => {
+export const loginGoogle = async (req, res) => {
 
+    const dataForAccessToken = {
+        email: req.user.email,
+        id: req.user._id
+    };
+    const accessToken = await generateAccessToken(
+        dataForAccessToken,
+    );
+    if (!accessToken) {
+        return res
+            .status(402)
+            .send({ msg: 'Đăng nhập không thành công, vui lòng thử lại.' });
+    }
+    const { user } = req;
+    const { password: _, ...userInfo } = user.toObject();
+    res.cookie('accessToken', accessToken);
+    res.cookie('id', req.user._id);
+    res.cookie('displayName', req.user.name);
+    res.cookie('email', req.user.email);
+    return res.redirect(`${clientURL}/getinfo?token=${accessToken}&user=${JSON.stringify(userInfo)}`);
+}
+export const logout = async (req, res) => {
+    if (req.cookies) {
+        res.clearCookie('accessToken');
+        res.clearCookie('id');
+        res.clearCookie('displayName');
+        res.clearCookie('email');
+    }
+    return res.status(200).send({
+        msg: "Logout thành công",
+    });
 }

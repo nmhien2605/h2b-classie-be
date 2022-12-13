@@ -7,6 +7,7 @@ import {
   deletePresentation,
 } from "./presentationModel";
 import { generateCodeNumber } from "../../services/code";
+import { FIRST_SLIDE } from "../../constants";
 
 /**
  * Get All Presentation
@@ -17,7 +18,8 @@ import { generateCodeNumber } from "../../services/code";
 export const getAllByUserId = async (req, res) => {
   try {
     findPresentationByUserId(req.id, {
-      success: (presentations) => res.json({ success: true, data: presentations }),
+      success: (presentations) =>
+        res.json({ success: true, data: presentations }),
       error: (error) => {
         console.log(error);
         res
@@ -112,8 +114,8 @@ export const postCreate = async (req, res) => {
   try {
     createPresentation(
       {
+        ...FIRST_SLIDE,
         name,
-        slides: [],
         code: generateCodeNumber(8),
         owner: userId,
         groups: [],
