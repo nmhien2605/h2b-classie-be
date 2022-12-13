@@ -6,7 +6,7 @@ const { isUserAuthenticated } = require("../modules/auth/auth.mdw");
 
 const router = express.Router();
 const { createAccount, loginGoogle, loginDefault, logout } = require("../modules/auth/authController");
-
+const { getUserInfo } = require("../modules/user/userController")
 
 const failURL = "http://localhost:3000/login";
 
@@ -26,9 +26,10 @@ router.get('/auth/google/callback',
   async (req, res) => { await loginGoogle(req, res) }
 );
 
-router.get('/auth/user', isUserAuthenticated, async (req, res) => {
-
-  res.send("ok");
+router.get('/user-info', isUserAuthenticated, async (req, res) => {
+  await getUserInfo(req, res);
 })
-
+router.get('/auth/user', isUserAuthenticated, async (req, res) => {
+  res.send("ok")
+})
 module.exports = router;

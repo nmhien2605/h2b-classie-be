@@ -5,12 +5,12 @@ const { decodeToken } = require("../auth/authController");
 const { updateUserInfo } = require("./userModel");
 
 export const getUserInfo = async (req, res) => {
-    const user = await findUserById(req.id);
+    const user = await findUserById(req.cookies.id);
     if (!user) {
         return res.status(401).send({ msg: "User không tồn tại" });
     }
-    const { email, name, avatarURL, isActive } = user
-    return res.status(200).send({ msg: "get user info success", user: { email, name, avatarURL, isActive } });
+    const { password: _, ...userInfo } = user.toObject();
+    return res.status(200).send({ msg: "get user info success", user: userInfo });
 }
 export const activeAccount = async (req, res) => {
     try {

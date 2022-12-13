@@ -87,7 +87,6 @@ export const generateAccessToken = async (dataForAccessToken) => {
 export const loginDefault = async (req, res) => {
     const { email, password } = req.body;
     const user = await findUserByEmail(email);
-    console.log(user);
     if (!user) {
         return res.status(401).send({ msg: 'Email không tồn tại.' });
     }
@@ -117,14 +116,13 @@ export const loginDefault = async (req, res) => {
 
     //     refreshToken = user.refreshToken;
     // }
-    const { password: _, ...userInfo } = user.toObject();
     res.cookie('accessToken', accessToken);
     res.cookie('id', user._id);
     res.cookie('displayName', user.name ? user.name : user.email);
     res.cookie('email', user.email);
     return res.status(200).send({
         msg: 'Đăng nhập thành công.',
-        user: userInfo
+        // user: userInfo
     });
 }
 export const loginGoogle = async (req, res) => {
@@ -141,13 +139,13 @@ export const loginGoogle = async (req, res) => {
             .status(402)
             .send({ msg: 'Đăng nhập không thành công, vui lòng thử lại.' });
     }
-    const { user } = req;
-    const { password: _, ...userInfo } = user.toObject();
+
     res.cookie('accessToken', accessToken);
     res.cookie('id', req.user._id);
     res.cookie('displayName', req.user.name);
     res.cookie('email', req.user.email);
-    return res.redirect(`${clientURL}/getinfo?token=${accessToken}&user=${JSON.stringify(userInfo)}`);
+
+    return res.redirect(`${clientURL}/getinfo`);
 }
 export const logout = async (req, res) => {
     if (req.cookies) {
