@@ -17,7 +17,7 @@ export const createAccount = async (req, res) => {
 
     const user = await findUserByEmail(email, null)
     if (user) {
-        res.status(409).send('Tên tài khoản đã tồn tại.');
+        res.status(405).send({ msg: 'Email tài khoản đã tồn tại.' });
         return;
     }
     const hashedPassword = bcrypt.hashSync(password, saltRounds);
@@ -26,7 +26,7 @@ export const createAccount = async (req, res) => {
         email,
         password: hashedPassword,
         isActive: false,
-        avatarURL: "",
+        avatarURL: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcROdEaZteLTepbACoy3MjSfAsulnfciHnp4nw&usqp=CAU",
     }
     createUser(newUser, {
         success: async (user) => {
@@ -42,7 +42,7 @@ export const createAccount = async (req, res) => {
             console.log(e);
             res
                 .status(500)
-                .json({ success: false, message: "Create account fail!" });
+                .json({ success: false, msg: "Create account fail!" });
         }
     })
 };
@@ -88,12 +88,12 @@ export const loginDefault = async (req, res) => {
     const { email, password } = req.body;
     const user = await findUserByEmail(email);
     if (!user) {
-        return res.status(401).send({ msg: 'Email không tồn tại.' });
+        return res.status(404).send({ msg: 'Tài khoản không tồn tại.' });
     }
 
     const isPasswordValid = bcrypt.compareSync(password, user.password);
     if (!isPasswordValid) {
-        return res.status(403).send({ msg: 'Mật khẩu không chính xác.' });
+        return res.status(404).send({ msg: 'Mật khẩu không chính xác.' });
     }
 
     const dataForAccessToken = {
@@ -105,7 +105,7 @@ export const loginDefault = async (req, res) => {
     );
     if (!accessToken) {
         return res
-            .status(402)
+            .status(401)
             .send({ msg: 'Đăng nhập không thành công, vui lòng thử lại.' });
     }
     // let refreshToken = randToken.generate(jwtVariable.refreshTokenSize);
@@ -136,7 +136,7 @@ export const loginGoogle = async (req, res) => {
     );
     if (!accessToken) {
         return res
-            .status(402)
+            .status(401)
             .send({ msg: 'Đăng nhập không thành công, vui lòng thử lại.' });
     }
 
