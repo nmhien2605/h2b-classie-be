@@ -26,7 +26,7 @@ export const createAccount = async (req, res) => {
         email,
         password: hashedPassword,
         isActive: false,
-        avatarURL: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcROdEaZteLTepbACoy3MjSfAsulnfciHnp4nw&usqp=CAU",
+        avatarUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcROdEaZteLTepbACoy3MjSfAsulnfciHnp4nw&usqp=CAU",
     }
     createUser(newUser, {
         success: async (user) => {
