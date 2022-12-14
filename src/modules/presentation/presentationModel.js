@@ -21,6 +21,7 @@ const schema = new Schema(
     owner: { type: Schema.Types.ObjectId, ref: User, require: true },
     groups: [{ type: Schema.Types.ObjectId, ref: Group }],
     isPublic: { type: Schema.Types.Boolean, default: 1 },
+    isPresent: { type: Schema.Types.Boolean, default: 0 },
   },
   { timestamps: true }
 );
@@ -121,7 +122,11 @@ export const createPresentation = async (presentationInfo, callbacks) => {
  * @param {{success: (data) => void, error: (e) => void}} callbacks
  * @returns updated presentation info
  */
-export const updatePresentationInfo = async (presentationId, presentationInfo, callbacks) => {
+export const updatePresentationInfo = async (
+  presentationId,
+  presentationInfo,
+  callbacks
+) => {
   try {
     const presentation = await Presentation.findOneAndUpdate(
       { _id: presentationId },
@@ -146,6 +151,33 @@ export const deletePresentation = async (presentationId, callbacks) => {
     await Presentation.findOne({ _id: presentationId }).remove();
     callbacks?.success();
     return true;
+  } catch (error) {
+    callbacks?.error(error);
+    throw error;
+  }
+};
+
+/**
+ * @param {ObjectId} presentationId
+ * @param {ObjectId} userId
+ * @param {boolean} isPresent
+ * @param {{success: (data) => void, error: (e) => void}} callbacks
+ * @returns updated presentation info
+ */
+export const updatePresentationIsPresent = async (
+  presentationId,
+  userId,
+  isPresent,
+  callbacks
+) => {
+  try {
+    const presentation = await Presentation.findOneAndUpdate(
+      { _id: presentationId, owner: userId },
+      { isPresent: isPresent },
+      { new: true }
+    );
+    callbacks?.success(presentation);
+    return presentation;
   } catch (error) {
     callbacks?.error(error);
     throw error;
