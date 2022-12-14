@@ -31,21 +31,21 @@ router.post("/", isUserAuthenticated, PresentationController.postCreate);
 // @route PUT /:id
 // @desc Update Presentation
 // @access Private and role ADMINISTRATOR
-router.put("/:id", PresentationController.putUpdate);
+router.put("/:id", isUserAuthenticated, PresentationController.putUpdate);
 
 // @route PUT /enable/:id
 // @desc Update Presentation
 // @access Private and role ADMINISTRATOR
-router.put("/enable/:id", PresentationController.putEnablePresent);
+router.put("/enable/:id", isUserAuthenticated, PresentationController.putEnablePresent);
 
 // @route PUT /disable/:id
 // @desc Update Presentation
 // @access Private and role ADMINISTRATOR
-router.put("/disable/:id", PresentationController.putDisablePresent);
+router.put("/disable/:id", isUserAuthenticated, PresentationController.putDisablePresent);
 
 // @route DELETE /:id
 // @desc Delete Presentation
 // @access Private and role ADMINISTRATOR
-router.delete("/:id", PresentationController.deleteRemove);
+router.delete("/:id", isUserAuthenticated, PresentationController.deleteRemove);
 
 module.exports = router;

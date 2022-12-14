@@ -62,7 +62,7 @@ function onConnection(socket) {
     console.log(socket.id + " hosted " + room);
     findPresentationByCode(room, {
       success: (presentation) => {
-        console.log(presentation._id);
+        // console.log(presentation._id);
         data.push({ socket: socket.id, room, presentation, current: 0 });
         console.log(data);
         io.to(socket.id).emit("res-host-room", {

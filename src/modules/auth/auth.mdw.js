@@ -59,9 +59,9 @@ export const isUserAuthenticated = async (req, res, next) => {
         const jwt = req.cookies.accessToken;
         try {
             const userInfo = await decodeToken(jwt, process.env.ACCESS_TOKEN_SECRET)
-            // const { id, email } = userInfo.payload;
-            // req.id = id;
-            // req.email = email;
+            const { id, email } = userInfo.payload;
+            req.id = id;
+            req.email = email;
             next();
         }
         catch (error) {
