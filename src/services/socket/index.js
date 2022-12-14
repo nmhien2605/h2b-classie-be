@@ -1,5 +1,6 @@
 import {
   findPresentationByCode,
+  updatePresentationInfo,
   updatePresentationIsPresent,
 } from "../../modules/presentation/presentationModel";
 
@@ -10,9 +11,34 @@ function ioSocketServer(ioSocket) {
   io = ioSocket;
   io.on("connection", onConnection);
 }
+
+export function findByCode(code) {
+  const index = data.findIndex((item) => item.room === code);
+  if (index !== -1) {
+    return data[index].presentation;
+  }
+  return null;
+}
+
+function updatePresentation(index) {
+  updatePresentationInfo(
+    data[index].presentation._id,
+    { slides: data[index].presentation.slides },
+    {
+      success: (presentation) => {
+        // do nothing
+      },
+      error: (error) => {
+        console.log(error);
+      },
+    }
+  );
+}
+
 function removeDataBySocket(id) {
   const index = data.findIndex((item) => item.socket === id);
   if (index !== -1) {
+    updatePresentation(index);
     data.splice(index, 1);
     console.log(data);
   }
@@ -21,6 +47,7 @@ function removeDataBySocket(id) {
 function removeDataByRoom(room) {
   const index = data.findIndex((item) => item.room === room);
   if (index !== -1) {
+    updatePresentation(index);
     data.splice(index, 1);
     console.log(data);
   }
@@ -56,6 +83,7 @@ function onConnection(socket) {
   socket.on("req-close-room", (msg) => {
     const index = data.findIndex((item) => item.socket === socket.id);
     if (index !== -1) {
+      updatePresentation(index);
       // updatePresentationIsPresent(
       //   data[index].presentation._id,
       //   data[index].presentation.owner,
@@ -78,6 +106,7 @@ function onConnection(socket) {
     console.log(socket.id + " disconnected");
     const index = data.findIndex((item) => item.socket === socket.id);
     if (index !== -1) {
+      updatePresentation(index);
       data.splice(index, 1);
       console.log(data);
     }
@@ -109,11 +138,12 @@ function onConnection(socket) {
       io.to(room).emit("res-vote-room", data[index].presentation);
     }
   });
-  
+
   socket.on("req-next-slide", (room) => {
     console.log(room + "next");
     const index = data.findIndex((item) => item.room === room);
     if (index !== -1) {
+      updatePresentation(index);
       data[index].current++;
       io.to(room).emit("res-next-slide", data[index].current);
     }
