@@ -8,7 +8,7 @@ const router = express.Router();
 const { createAccount, loginGoogle, loginDefault, logout } = require("../modules/auth/authController");
 const { getUserInfo } = require("../modules/user/userController")
 
-const failURL = "http://localhost:3000/login";
+const failURL = `${process.env.CLIENT_DOMAIN}/login`;
 
 router.post("/sign-up", async (req, res, next) => {
   await createAccount(req, res);
