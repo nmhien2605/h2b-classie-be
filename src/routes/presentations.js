@@ -33,6 +33,16 @@ router.post("/", isUserAuthenticated, PresentationController.postCreate);
 // @access Private and role ADMINISTRATOR
 router.put("/:id", PresentationController.putUpdate);
 
+// @route PUT /enable/:id
+// @desc Update Presentation
+// @access Private and role ADMINISTRATOR
+router.put("/enable/:id", PresentationController.putEnablePresent);
+
+// @route PUT /disable/:id
+// @desc Update Presentation
+// @access Private and role ADMINISTRATOR
+router.put("/disable/:id", PresentationController.putDisablePresent);
+
 // @route DELETE /:id
 // @desc Delete Presentation
 // @access Private and role ADMINISTRATOR
