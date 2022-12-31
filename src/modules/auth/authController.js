@@ -9,7 +9,7 @@ const verify = promisify(jwt.verify).bind(jwt);
 const bcrypt = require('bcrypt');
 // const randToken = require('rand-token');
 // const cookie = require('cookies');
-const clientURL = "http://localhost:3000";
+const clientURL = `${process.env.CLIENT_DOMAIN}`;
 const saltRounds = 10;
 export const createAccount = async (req, res) => {
 

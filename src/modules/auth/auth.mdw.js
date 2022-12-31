@@ -4,7 +4,7 @@ import { decodeToken } from "./authController";
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 
-const GOOGLE_CALLBACK_URL = "http://localhost:5000/auth/google/callback";
+const GOOGLE_CALLBACK_URL = `${process.env.SERVER_DOMAIN}/auth/google/callback`;
 
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
@@ -59,9 +59,9 @@ export const isUserAuthenticated = async (req, res, next) => {
         const jwt = req.cookies.accessToken;
         try {
             const userInfo = await decodeToken(jwt, process.env.ACCESS_TOKEN_SECRET)
-            // const { id, email } = userInfo.payload;
-            // req.id = id;
-            // req.email = email;
+            const { id, email } = userInfo.payload;
+            req.id = id;
+            req.email = email;
             next();
         }
         catch (error) {

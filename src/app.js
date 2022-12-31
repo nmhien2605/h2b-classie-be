@@ -14,7 +14,7 @@ const presentationsRouter = require('./routes/presentations')
 const { default: useDatabase } = require('./services/database');
 
 const corsOptions = {
-  origin: 'http://localhost:3000',
+  origin: `${process.env.CLIENT_DOMAIN}`,
   credentials: true,
   optionSuccessStatus: 200,
 }
