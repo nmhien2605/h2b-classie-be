@@ -1,5 +1,6 @@
 
-import { createUser, findUserByEmail } from "../user/userModel";
+import res from "express/lib/response";
+import { createUser, findUserByEmail, updateUserInfo } from "../user/userModel";
 
 const jwt = require('jsonwebtoken');
 const { promisify } = require('util');
@@ -17,7 +18,7 @@ export const createAccount = async (req, res) => {
 
     const user = await findUserByEmail(email, null)
     if (user) {
-        res.status(405).send({ msg: 'Email tài khoản đã tồn tại.' });
+        res.status(405).send({ message: 'Email tài khoản đã tồn tại.' });
         return;
     }
     const hashedPassword = bcrypt.hashSync(password, saltRounds);
@@ -42,7 +43,7 @@ export const createAccount = async (req, res) => {
             console.log(e);
             res
                 .status(500)
-                .json({ success: false, msg: "Create account fail!" });
+                .json({ success: false, message: "Create account fail!" });
         }
     })
 };
@@ -88,12 +89,12 @@ export const loginDefault = async (req, res) => {
     const { email, password } = req.body;
     const user = await findUserByEmail(email);
     if (!user) {
-        return res.status(404).send({ msg: 'Tài khoản không tồn tại.' });
+        return res.status(404).send({ message: 'Tài khoản không tồn tại.' });
     }
 
     const isPasswordValid = bcrypt.compareSync(password, user.password);
     if (!isPasswordValid) {
-        return res.status(404).send({ msg: 'Mật khẩu không chính xác.' });
+        return res.status(404).send({ message: 'Mật khẩu không chính xác.' });
     }
 
     const dataForAccessToken = {
@@ -106,7 +107,7 @@ export const loginDefault = async (req, res) => {
     if (!accessToken) {
         return res
             .status(401)
-            .send({ msg: 'Đăng nhập không thành công, vui lòng thử lại.' });
+            .send({ message: 'Đăng nhập không thành công, vui lòng thử lại.' });
     }
     // let refreshToken = randToken.generate(jwtVariable.refreshTokenSize);
     // if (!user.refreshToken) {
@@ -121,7 +122,7 @@ export const loginDefault = async (req, res) => {
     res.cookie('displayName', user.name ? user.name : user.email);
     res.cookie('email', user.email);
     return res.status(200).send({
-        msg: 'Đăng nhập thành công.',
+        message: 'Đăng nhập thành công.',
         // user: userInfo
     });
 }
@@ -137,7 +138,7 @@ export const loginGoogle = async (req, res) => {
     if (!accessToken) {
         return res
             .status(401)
-            .send({ msg: 'Đăng nhập không thành công, vui lòng thử lại.' });
+            .send({ message: 'Đăng nhập không thành công, vui lòng thử lại.' });
     }
 
     res.cookie('accessToken', accessToken);
@@ -155,6 +156,32 @@ export const logout = async (req, res) => {
         res.clearCookie('email');
     }
     return res.status(200).send({
-        msg: "Logout thành công",
+        message: "Logout thành công",
+    });
+}
+export const changePassword = async (email, password, newPassword) => {
+    const userInfo = await findUserByEmail(email, {
+        success: async (user) => {
+            console.log(user);
+            // hash new password
+            const hashedPassword = bcrypt.hashSync(newPassword, saltRounds);
+            // forgot password
+            if (password === "forgot") {
+                await updateUserInfo({ _id: user._id, password: hashedPassword });
+                return res.status(200).status({ success: true, message: "Change password successfully" });
+            }
+            // change password in setting
+            if (bcrypt.compareSync(password, user.password)) {
+                await updateUserInfo({ _id: user._id, password: hashedPassword })
+                return res.status(200).status({ success: true, message: "Change password successfully" });
+            }
+            return res.status(400).status({ success: false, message: "Current password does not match!" })
+
+        },
+
+        error: (error) => {
+            console.log(error);
+            return res.status(404).status({ success: false, message: "User not found!" })
+        }
     });
 }

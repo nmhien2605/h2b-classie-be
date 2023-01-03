@@ -1,3 +1,4 @@
+/*eslint-disable */
 module.exports = {
   verification: (verificationUrl) => {
     return `<!DOCTYPE html>

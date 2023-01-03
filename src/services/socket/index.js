@@ -80,7 +80,7 @@ function onConnection(socket) {
     });
   });
 
-  socket.on("req-close-room", (msg) => {
+  socket.on("req-close-room", (message) => {
     const index = data.findIndex((item) => item.socket === socket.id);
     if (index !== -1) {
       updatePresentation(index);
