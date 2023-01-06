@@ -65,9 +65,9 @@ export const isUserAuthenticated = async (req, res, next) => {
             next();
         }
         catch (error) {
-            res.status(401).send("Verify failed");
+            res.status(401).send({ message: "Verify failed", success: false });
         }
     } else {
-        res.status(401).send("You must login first!");
+        res.status(401).send({ message: "You must login first!", success: false });
     }
 };
