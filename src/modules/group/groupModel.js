@@ -13,6 +13,7 @@ const schema = new Schema(
           require: true,
           enum: ["owner", "co-owner", "member"],
         },
+        status: Schema.Types.Boolean,
         _id: false,
       },
     ],
@@ -75,8 +76,7 @@ export const deleteGroup = async (groupId, callbacks) => {
     callbacks?.error(error);
     throw error;
   }
-}
-
+};
 
 /**
  *
@@ -147,6 +147,25 @@ export const updateMemberRole = async (groupId, memberInfo, callbacks) => {
   }
 };
 
+export const updateMemberStatus = async (groupId, memberInfo, callbacks) => {
+  try {
+    const updatedGroup = await Group.findOneAndUpdate(
+      { _id: groupId, members: { $elemMatch: { detail: memberInfo.detail } } },
+      {
+        $set: { "members.$.status": memberInfo.status },
+      },
+      { new: true }
+    );
+
+    callbacks?.success(updatedGroup);
+    return updatedGroup;
+  } catch (error) {
+    callbacks?.error(error);
+    throw error;
+  }
+};
+
+
 /**
  *
  * @param {ObjectId} memberId
@@ -178,7 +197,7 @@ export const findGroupById = async (groupId, userId, callbacks) => {
     const group = await Group.findOne({
       _id: groupId,
       members: { $elemMatch: { detail: userId } },
-    });
+    }).populate("members.detail");
     callbacks?.success(group);
     return group;
   } catch (error) {

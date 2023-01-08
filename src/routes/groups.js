@@ -17,9 +17,9 @@ router.get("/", isUserAuthenticated, GroupController.getAllByUserId);
 // @access Private and role ADMINISTRATOR or MANAGER
 router.get(
   "/:id", isUserAuthenticated,
-  (req, res, next) => {
-    roleCheckMW(req, res, next, ["owner"]);
-  },
+  // (req, res, next) => {
+  //   roleCheckMW(req, res, next, ["owner"]);
+  // },
   GroupController.getOne
 );
 
@@ -56,6 +56,8 @@ router.delete("/:id", GroupController.deleteRemove);
 // @route DELETE /:id
 // @desc Delete Group
 // @access Private and role ADMINISTRATOR
-router.get("/:id/remove-member/:userId", isUserAuthenticated, GroupController.deleteRemoveMember);
+router.delete("/:id/remove-member/:userId", isUserAuthenticated, GroupController.deleteRemoveMember);
+
+router.put("/:id/update-member/:userId", isUserAuthenticated, GroupController.putUpdateMember);
 
 module.exports = router;
