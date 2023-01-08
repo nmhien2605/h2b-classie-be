@@ -1,6 +1,6 @@
 
 import res from "express/lib/response";
-import { createUser, findUserByEmail, updateUserInfo } from "../user/userModel";
+import { createUser, findUserByEmail, findUserById, updateUserInfo } from "../user/userModel";
 
 const jwt = require('jsonwebtoken');
 const { promisify } = require('util');
@@ -159,29 +159,59 @@ export const logout = async (req, res) => {
         message: "Logout thành công",
     });
 }
-export const changePassword = async (email, password, newPassword) => {
-    const userInfo = await findUserByEmail(email, {
-        success: async (user) => {
-            console.log(user);
-            // hash new password
-            const hashedPassword = bcrypt.hashSync(newPassword, saltRounds);
-            // forgot password
-            if (password === "forgot") {
-                await updateUserInfo({ _id: user._id, password: hashedPassword });
-                return res.status(200).status({ success: true, message: "Change password successfully" });
-            }
-            // change password in setting
-            if (bcrypt.compareSync(password, user.password)) {
-                await updateUserInfo({ _id: user._id, password: hashedPassword })
-                return res.status(200).status({ success: true, message: "Change password successfully" });
-            }
-            return res.status(400).status({ success: false, message: "Current password does not match!" })
 
+export const changePassword = async (req, res) => {
+
+    const userId = req.id;
+    const password = req.body.password;
+    const newPassword = req.body.newPassword;
+
+    const userInfo = await findUserById(userId, {
+        success: async (user) => {
+
+            try {
+                // hash new password
+                const hashedPassword = bcrypt.hashSync(newPassword, saltRounds);
+                // change password in setting
+                if (bcrypt.compareSync(password, user.password)) {
+                    await updateUserInfo({ _id: user._id, password: hashedPassword })
+                    return res.status(200).send({ success: true, message: "Change password successfully" });
+                }
+                return res.status(400).send({ success: false, message: "Current password does not match!" })
+            } catch {
+                return res.status(400).send({ success: false, message: "Invalid data" });
+            }
         },
 
         error: (error) => {
             console.log(error);
-            return res.status(404).status({ success: false, message: "User not found!" })
+            return res.status(404).send({ success: false, message: "User not found!" })
         }
     });
 }
+export const resetPassword = async (req, res) => {
+    const userId = req.body.id;
+    console.log(userId)
+    const newPassword = req.body.password
+    console.log(newPassword)
+    const userInfo = await findUserById(userId, {
+        success: async (user) => {
+            // hash new password
+            try {
+                const hashedPassword = bcrypt.hashSync(newPassword, saltRounds);
+                // forgot password
+                await updateUserInfo({ _id: user._id, password: hashedPassword });
+                return res.status(200).send({ success: true, message: "Change password successfully" });
+
+            } catch {
+                return res.status(400).send({ success: false, message: "Invalid data" });
+            }
+        },
+
+        error: (error) => {
+            console.log(error);
+            return res.status(404).send({ success: false, message: "User not found!" })
+        }
+    });
+}
+

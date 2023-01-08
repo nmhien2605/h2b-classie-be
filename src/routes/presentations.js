@@ -11,7 +11,7 @@ router.get("/", isUserAuthenticated, PresentationController.getAllByUserId);
 // @route GET /
 // @desc Get All Presentation by Group ID
 // @access Private and role ADMINISTRATOR or MANAGER
-router.get("/by-group/:id", isUserAuthenticated, PresentationController.getAllByUserId);
+router.get("/by-group/:group", isUserAuthenticated, PresentationController.getAllByGroupId);
 
 // @route GET /:id
 // @desc Show Presentation

@@ -5,8 +5,10 @@ const passport = require('passport');
 const { isUserAuthenticated } = require("../modules/auth/auth.mdw");
 
 const router = express.Router();
-const { createAccount, loginGoogle, loginDefault, logout } = require("../modules/auth/authController");
-const { getUserInfo, activeAccount } = require("../modules/user/userController")
+const { createAccount, loginGoogle, loginDefault, logout, changePassword, resetPassword } = require("../modules/auth/authController");
+const { getUserInfo, activeAccount, generateResetPwdUrl } = require("../modules/user/userController");
+const { findUserByEmail } = require("../modules/user/userModel");
+
 
 const failURL = `${process.env.CLIENT_DOMAIN}/login`;
 
@@ -32,5 +34,22 @@ router.get('/user-info', isUserAuthenticated, async (req, res) => {
 
 router.get('/auth/user', isUserAuthenticated, async (req, res) => {
   res.send("ok")
+})
+router.post('/forgot-password', async (req, res) => {
+  //return with URL + id
+  await generateResetPwdUrl(req, res);
+})
+router.post('/reset-password', async (req, res) => {
+  try {
+
+    await resetPassword(req, res)
+  }
+  catch (e) {
+    res.status(400).send({ success: false, message: "invalid data" });
+  }
+})
+router.post('/change-password', isUserAuthenticated, async (req, res) => {
+  await changePassword(req, res);
+
 })
 module.exports = router;

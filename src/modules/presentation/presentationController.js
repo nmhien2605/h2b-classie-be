@@ -2,6 +2,7 @@ import {
   findPresentationById,
   findPresentationByCode,
   findPresentationByUserId,
+  findPresentationByGroupId,
   createPresentation,
   updatePresentationInfo,
   deletePresentation,
@@ -99,6 +100,35 @@ export const getOneByCode = async (req, res) => {
             return res.status(200).json({ success: false, message: "Presentation is not present" });
           }
         }
+      },
+      error: (error) => {
+        console.log(error);
+        return res
+          .status(500)
+          .json({ success: false, message: "Internal server error" });
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+/**
+ * Get Presentations By GroupId
+ * @param req
+ * @param res
+ * @returns void
+ */
+export const getAllByGroupId = async (req, res) => {
+  const { group } = req.params;
+  const userId = req.id;
+
+  try {
+    console.log(group)
+    findPresentationByGroupId(group, {
+      success: (presentations) => {
+        return res.status(200).json({ success: true, data: presentations });
       },
       error: (error) => {
         console.log(error);

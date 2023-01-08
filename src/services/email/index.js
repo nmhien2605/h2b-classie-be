@@ -1,5 +1,5 @@
 const nodemailer = require("nodemailer");
-const { verification, invitation } = require("../../utils/emailTemplate");
+const { verification, invitation, resetPasswordTemplate } = require("../../utils/emailTemplate");
 
 const MAIL_SENDER = "learnhub.h2b@gmail.com";
 
@@ -33,7 +33,18 @@ async function sendVerificationMail(receivers, verificationUrl, callbacks) {
     callbacks
   );
 }
-
+async function sendResetPasswordMail(receivers, resetPasswordUrl, callbacks) {
+  const htmlBody = resetPasswordTemplate(resetPasswordUrl);
+  return sendMail(
+    {
+      htmlBody,
+      receivers,
+      subject: "Reset Password",
+      sender: MAIL_SENDER,
+    },
+    callbacks
+  );
+}
 async function sendInvitationMail(
   inviter,
   groupName,
@@ -75,4 +86,5 @@ async function sendMail(mailInfo, callbacks) {
 module.exports = {
   sendVerificationMail,
   sendInvitationMail,
+  sendResetPasswordMail,
 };
