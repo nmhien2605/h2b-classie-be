@@ -89,8 +89,8 @@ export const findPresentationByUserId = async (userId, callbacks) => {
  */
 export const findPresentationByGroupId = async (groupId, callbacks) => {
   try {
-    const presentations = await Presentation.findOne({
-      groups: { $elemMatch: groupId },
+    const presentations = await Presentation.find({
+      groups: { $elemMatch: { $eq: groupId } },
     });
     callbacks?.success(presentations);
     return presentations;
