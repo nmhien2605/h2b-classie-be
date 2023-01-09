@@ -106,8 +106,8 @@ export const getInvitationPublic = async (group, callbacks) => {
     const invitation = await Invitation.findOne({ group, isPublic: true }).populate("group");
     callbacks?.success(invitation);
     return invitation;
-  } catch (error) {
-    callbacks?.error?.(error);
-    throw error;
+  } catch (e) {
+    callbacks?.error?.(e);
+    throw e;
   }
 };

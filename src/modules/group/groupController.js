@@ -13,7 +13,11 @@ import {
   removeMember,
   deleteGroup,
 } from "./groupModel";
-import { findUserById, findUserByIds, findUserByEmail } from "../user/userModel";
+import {
+  findUserById,
+  findUserByIds,
+  findUserByEmail,
+} from "../user/userModel";
 
 // Import Service
 import { sendInvitationMail } from "../../services/email/index";
@@ -33,7 +37,13 @@ import {
 export const getAllByUserId = async (req, res) => {
   try {
     findGroupByMemberId(req.id, {
-      success: (groups) => res.json({ success: true, data: groups }),
+      success: (groups) => {
+        const data = groups.filter(({ members }) => {
+          const user = members?.find((member) => member.detail.equals(req.id));
+          return user.status;
+        });
+        res.json({ success: true, data });
+      },
       error: (error) => {
         console.log(error);
         res
@@ -68,7 +78,13 @@ export const getOne = async (req, res) => {
         const userIds = group.members.map((member) => member.detail);
         findUserByIds(userIds, {
           success: (users) => {
-            const data = { name: group.name, members: group.members, users: users.map((user) => { return { detail: user._id, name: user.name, email: user.email } }) }
+            const data = {
+              name: group.name,
+              members: group.members,
+              users: users.map((user) => {
+                return { detail: user._id, name: user.name, email: user.email };
+              }),
+            };
             return res.status(200).json({ success: true, data });
           },
           error: (error) => {
@@ -76,8 +92,8 @@ export const getOne = async (req, res) => {
             return res
               .status(500)
               .json({ success: false, message: "Internal server error" });
-          }
-        })
+          },
+        });
       },
       error: (error) => {
         console.log(error);
@@ -110,6 +126,7 @@ export const postCreate = async (req, res) => {
           {
             detail: userId,
             role: "owner",
+            status: true,
           },
         ],
       },
@@ -119,13 +136,21 @@ export const postCreate = async (req, res) => {
             { isPublic: true, group: group._id },
             {
               success: (invitation) => {
-                const clientDomain = req.get("origin") ? req.get("origin") + "/" : req.get("referer");
-                const genLink = clientDomain + `groups/invite?group=${group._id}&code=${invitation.key}`;
-                res.status(200).json({ success: true, data: { group, inviteUrl: genLink } });
+                const clientDomain = req.get("origin")
+                  ? req.get("origin") + "/"
+                  : req.get("referer");
+                const genLink =
+                  clientDomain +
+                  `groups/invite?group=${group._id}&code=${invitation.key}`;
+                res
+                  .status(200)
+                  .json({ success: true, data: { group, inviteUrl: genLink } });
               },
               error: (error) => {
                 console.log(error);
-                res.status(500).json({ success: false, message: "Internal server error" });
+                res
+                  .status(500)
+                  .json({ success: false, message: "Internal server error" });
               },
             }
           );
@@ -167,9 +192,30 @@ export const postInvite = async (req, res) => {
             },
             {
               success: async (invitation) => {
-                const clientDomain = req.get("origin") ? req.get("origin") + "/" : req.get("referer");
-                const genLink = clientDomain + `groups/invite?group=${groupId}&code=${invitation.key}`;
-                await sendInvitationMail(owner.name, "Group", [email], genLink);
+                const clientDomain = req.get("origin")
+                  ? req.get("origin") + "/"
+                  : req.get("referer");
+                const genLink =
+                  clientDomain +
+                  `groups/invite?group=${groupId}&code=${invitation.key}`;
+                try {
+                  await sendInvitationMail(
+                    owner.name,
+                    "Group",
+                    [email],
+                    genLink
+                  );
+                  findUserByEmail(email, {
+                    success: (user) =>
+                      addMember(groupId, {
+                        detail: user._id,
+                        role: "member",
+                        status: false,
+                      }),
+                  });
+                } catch (error) {
+                  console.log({ error });
+                }
               },
               error: (error) => {
                 console.log(error);
@@ -266,9 +312,25 @@ export const postJoinGroup = async (req, res) => {
         .json({ success: false, message: "Invite link is invalid" });
     }
 
-    addMember(
+    // addMember(
+    //   groupId,
+    //   { detail: userId, role: "member" },
+    //   {
+    //     success: (group) => {
+    //       res.status(200).json({ success: true, data: group });
+    //     },
+    //     error: (error) => {
+    //       console.log(error);
+    //       res
+    //         .status(500)
+    //         .json({ success: false, message: "Internal server error" });
+    //     },
+    //   }
+    // );
+
+    updateMemberStatus(
       groupId,
-      { detail: userId, role: "member" },
+      { detail: userId, status: true },
       {
         success: (group) => {
           res.status(200).json({ success: true, data: group });
@@ -292,8 +354,11 @@ export const getInviteUrl = async (req, res) => {
 
   getInvitationPublic(groupId, {
     success: (invitation) => {
-      const clientDomain = req.get("origin") ? req.get("origin") + "/" : req.get("referer");
-      const genLink = clientDomain + `groups/invite?group=${groupId}&code=${invitation.key}`;
+      const clientDomain = req.get("origin")
+        ? req.get("origin") + "/"
+        : req.get("referer");
+      const genLink =
+        clientDomain + `groups/invite?group=${groupId}&code=${invitation.key}`;
       res.status(200).json({ success: true, data: { inviteUrl: genLink } });
     },
     error: (error) => {
@@ -321,4 +386,25 @@ export const deleteRemoveMember = async (req, res) => {
         .json({ success: false, message: "Internal server error" });
     },
   });
+};
+
+export const putUpdateMember = async (req, res) => {
+  const { id: groupId, userId } = req.params;
+  const { role } = req.body;
+
+  updateMemberRole(
+    groupId,
+    { detail: userId, role },
+    {
+      success: (group) => {
+        res.status(200).json({ success: true, data: group });
+      },
+      error: (error) => {
+        console.log(error);
+        res
+          .status(500)
+          .json({ success: false, message: "Internal server error" });
+      },
+    }
+  );
 };
