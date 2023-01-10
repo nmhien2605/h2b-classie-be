@@ -1,5 +1,5 @@
 import {
-  findPresentationByCode,
+  findPresentationGroupByCode,
   updatePresentationInfo,
   updatePresentationIsPresent,
 } from "../../modules/presentation/presentationModel";
@@ -60,8 +60,8 @@ function onConnection(socket) {
     socket.join(room);
     console.log(socket.id + " hosted " + room);
     const index = data.findIndex((item) => item.room === room);
-    findPresentationByCode(room, {
-      success: (presentation) => {
+    findPresentationGroupByCode(room, {
+      success: async (presentation) => {
         if (index === -1) {
           data.push({ socket: socket.id, room, presentation, current: 0 });
           io.emit("start-present", presentation);
