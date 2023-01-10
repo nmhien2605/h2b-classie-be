@@ -3,6 +3,7 @@ import {
   updatePresentationInfo,
   updatePresentationIsPresent,
 } from "../../modules/presentation/presentationModel";
+import { generateCode } from "../code";
 
 let io = null;
 let data = [];
@@ -136,6 +137,28 @@ function onConnection(socket) {
       io.to(room).emit("res-next-slide", data[index].current);
     }
   });
+
+  // listen  to chat request
+  socket.on("req-send-text", (room, name, text) => {
+    console.log("nội dung: ", text);
+    // var current = new Date();
+    // const time = current.getHours() + ":" + current.getMinutes();
+    const time = new Date().toLocaleTimeString('en-US', {
+      hour12: false,
+      hour: "numeric",
+      minute: "numeric"
+    });
+
+    const textObj = {
+      id: generateCode(6),
+      name,
+      content: text,
+      time: time
+    }
+
+    io.to(room).emit("broadcast-new-msg", textObj);
+  })
+
 }
 
 module.exports = ioSocketServer;
