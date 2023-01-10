@@ -64,7 +64,13 @@ function onConnection(socket) {
     findPresentationGroupByCode(room, {
       success: async (presentation) => {
         if (index === -1) {
-          data.push({ socket: socket.id, room, presentation, current: 0 });
+          data.push({
+            socket: socket.id,
+            room,
+            presentation,
+            questions: [],
+            current: 0,
+          });
           io.emit("start-present", presentation);
         } else {
           data[index].socket = socket.id;
@@ -180,6 +186,75 @@ function onConnection(socket) {
     io.to(room).emit("broadcast-new-msg", textObj);
   })
 
+  socket.on("req-get-question", (room) => {
+    const index = data.findIndex((item) => item.room === room);
+    if (index > -1) {
+      io.to(socket.id).emit("update-question", data[index].questions);
+    }
+  });
+
+  socket.on("req-send-question", (room, user, question) => {
+    console.log("question", room, user, question);
+    const index = data.findIndex((item) => item.room === room);
+    if (index > -1) {
+      const time = new Date().toLocaleTimeString("en-US", {
+        hour12: false,
+        hour: "numeric",
+        minute: "numeric",
+      });
+
+      data[index].questions.push({
+        id: generateCode(32),
+        username: user.name,
+        question,
+        like: 0,
+        likeUsers: [],
+        isAnswer: false,
+        time: time,
+      });
+
+      io.to(room).emit("update-question", data[index].questions);
+    }
+  });
+
+  socket.on("req-like-question", (room, user, questionId) => {
+    console.log("like", room, user, questionId);
+    const index = data.findIndex((item) => item.room === room);
+    if (index > -1) {
+      const questionIndex = data[index].questions.findIndex(
+        (item) => item.id === questionId
+      );
+      if (questionIndex > -1) {
+        const userIndex = data[index].questions[
+          questionIndex
+        ].likeUsers.findIndex((item) => item === user.id);
+        if (userIndex > -1) {
+          data[index].questions[questionIndex].like--;
+          data[index].questions[questionIndex].likeUsers.splice(userIndex, 1);
+        } else {
+          data[index].questions[questionIndex].like++;
+          data[index].questions[questionIndex].likeUsers.push(user.id);
+        }
+
+        io.to(room).emit("update-question", data[index].questions);
+      }
+    }
+  });
+
+  socket.on("req-answer-question", (room, user, questionId) => {
+    console.log("answer", room, user, questionId);
+    const index = data.findIndex((item) => item.room === room);
+    if (index > -1) {
+      const questionIndex = data[index].questions.findIndex(
+        (item) => item.id === questionId
+      );
+      if (questionIndex > -1) {
+        data[index].questions[questionIndex].isAnswer = true;
+
+        io.to(room).emit("update-question", data[index].questions);
+      }
+    }
+  });
 }
 
 module.exports = ioSocketServer;
