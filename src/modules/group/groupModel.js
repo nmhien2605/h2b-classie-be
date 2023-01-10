@@ -13,7 +13,7 @@ const schema = new Schema(
           require: true,
           enum: ["owner", "co-owner", "member"],
         },
-        status: Schema.Types.Boolean,
+        status: { type: Schema.Types.Boolean, require: false, default: true },
         _id: false,
       },
     ],

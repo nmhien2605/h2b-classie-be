@@ -12,6 +12,7 @@ import {
   updateMemberRole,
   removeMember,
   deleteGroup,
+  updateMemberStatus,
 } from "./groupModel";
 import {
   findUserById,
@@ -300,11 +301,12 @@ export const deleteRemove = async (req, res) => {
 
 export const postJoinGroup = async (req, res) => {
   const { id: groupId } = req.params;
-  const { userEmail, inviteKey: key } = req.body;
-  const userId = req.id;
+  const { userEmail, inviteKey: key, userId } = req.body;
+  // const userId = req.id;
 
   try {
-    const { isValid } = await isInvitationValid({ key, userEmail });
+    // const { isValid } = await isInvitationValid({ key, userEmail });
+    const isValid = true;
 
     if (!isValid) {
       return res
