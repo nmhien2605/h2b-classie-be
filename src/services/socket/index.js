@@ -57,17 +57,22 @@ function onConnection(socket) {
   console.log("New connection: " + socket.id);
 
   socket.on("req-host-room", (room) => {
-    removeDataByRoom(room);
     socket.join(room);
     console.log(socket.id + " hosted " + room);
+    const index = data.findIndex((item) => item.room === room);
     findPresentationByCode(room, {
       success: (presentation) => {
-        // console.log(presentation._id);
-        data.push({ socket: socket.id, room, presentation, current: 0 });
+        if (index === -1) {
+          data.push({ socket: socket.id, room, presentation, current: 0 });
+          io.emit("start-present", presentation);
+        } else {
+          data[index].socket = socket.id;
+        }
         console.log(data);
         io.to(socket.id).emit("res-host-room", {
           success: true,
           message: "join room successful",
+          current: index > -1 ? data[index].current : 0,
         });
       },
       error: (error) => {
@@ -84,32 +89,15 @@ function onConnection(socket) {
     const index = data.findIndex((item) => item.socket === socket.id);
     if (index !== -1) {
       updatePresentation(index);
-      // updatePresentationIsPresent(
-      //   data[index].presentation._id,
-      //   data[index].presentation.owner,
-      //   false,
-      //   {
-      //     success: (presentation) => {
-      //       console.log(presentation);
-      //     },
-      //     error: (error) => {
-      //       console.log(error);
-      //     },
-      //   }
-      // );
+      const presentation = data[index].presentation;
       data.splice(index, 1);
+      io.emit("end-present", presentation);
       console.log(data);
     }
   });
 
   socket.on("disconnect", (reason) => {
     console.log(socket.id + " disconnected");
-    const index = data.findIndex((item) => item.socket === socket.id);
-    if (index !== -1) {
-      updatePresentation(index);
-      data.splice(index, 1);
-      console.log(data);
-    }
   });
 
   socket.on("req-join-room", (room) => {
