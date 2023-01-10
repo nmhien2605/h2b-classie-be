@@ -47,6 +47,24 @@ export const findPresentationById = async (presentationId, callbacks) => {
 };
 
 /**
+ * @param {ObjectId} presentationId
+ * @param {{success: (data) => void, error: (e) => void}} callbacks
+ * @returns find presentation info
+ */
+export const findPresentationGroupById = async (presentationId, callbacks) => {
+  try {
+    const presentation = await Presentation.findOne({
+      _id: presentationId,
+    }).populate("groups");
+    callbacks?.success(presentation);
+    return presentation;
+  } catch (error) {
+    callbacks?.error(error);
+    throw error;
+  }
+};
+
+/**
  * @param {code} code
  * @param {{success: (data) => void, error: (e) => void}} callbacks
  * @returns find presentation info

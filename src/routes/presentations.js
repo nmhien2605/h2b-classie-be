@@ -33,6 +33,11 @@ router.post("/", isUserAuthenticated, PresentationController.postCreate);
 // @access Private and role ADMINISTRATOR
 router.put("/:id", isUserAuthenticated, PresentationController.putUpdate);
 
+// @route GET /check-enable/:id
+// @desc Update Presentation
+// @access Private and role ADMINISTRATOR
+router.get("/check-enable/:id", isUserAuthenticated, PresentationController.checkEnablePresent);
+
 // @route PUT /enable/:id
 // @desc Update Presentation
 // @access Private and role ADMINISTRATOR
