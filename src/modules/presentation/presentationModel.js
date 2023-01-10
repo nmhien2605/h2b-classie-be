@@ -65,6 +65,24 @@ export const findPresentationByCode = async (code, callbacks) => {
 };
 
 /**
+ * @param {code} code
+ * @param {{success: (data) => void, error: (e) => void}} callbacks
+ * @returns find presentation info
+ */
+export const findPresentationGroupByCode = async (code, callbacks) => {
+  try {
+    const presentation = await Presentation.findOne({
+      code: code,
+    }).populate("groups");
+    callbacks?.success(presentation);
+    return presentation;
+  } catch (error) {
+    callbacks?.error(error);
+    throw error;
+  }
+};
+
+/**
  * @param {ObjectId} userId
  * @param {{success: (data) => void, error: (e) => void}} callbacks
  * @returns find presentation info
