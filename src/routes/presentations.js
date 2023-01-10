@@ -33,6 +33,9 @@ router.post("/", isUserAuthenticated, PresentationController.postCreate);
 // @access Private and role ADMINISTRATOR
 router.put("/:id", isUserAuthenticated, PresentationController.putUpdate);
 
+router.post("/:id/add-collab", isUserAuthenticated, PresentationController.postAddCollab);
+router.post("/:id/remove-collab", isUserAuthenticated, PresentationController.postRemoveCollab);
+
 // @route GET /check-enable/:id
 // @desc Update Presentation
 // @access Private and role ADMINISTRATOR

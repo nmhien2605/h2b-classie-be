@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { User } from "../user/userModel";
+import { findUserByEmail, User } from "../user/userModel";
 import { Group } from "../group/groupModel";
 const { Schema } = mongoose;
 
@@ -19,6 +19,7 @@ const schema = new Schema(
     ],
     code: { type: Schema.Types.String, require: true },
     owner: { type: Schema.Types.ObjectId, ref: User, require: true },
+    "co-owner": [{ type: Schema.Types.ObjectId, ref: User, require: false }],
     groups: [{ type: Schema.Types.ObjectId, ref: Group }],
     isPublic: { type: Schema.Types.Boolean, default: 1 },
     isPresent: { type: Schema.Types.Boolean, default: 0 },
@@ -37,7 +38,7 @@ export const findPresentationById = async (presentationId, callbacks) => {
   try {
     const presentation = await Presentation.findOne({
       _id: presentationId,
-    });
+    }).populate("co-owner");
     callbacks?.success(presentation);
     return presentation;
   } catch (error) {
@@ -108,8 +109,8 @@ export const findPresentationGroupByCode = async (code, callbacks) => {
 export const findPresentationByUserId = async (userId, callbacks) => {
   try {
     const presentations = await Presentation.find({
-      owner: userId,
-    });
+      $or: [{ owner: userId }, { "co-owner": { $eq: userId } }],
+    }).populate("owner");
     callbacks?.success(presentations);
     return presentations;
   } catch (error) {
@@ -210,6 +211,42 @@ export const updatePresentationIsPresent = async (
     const presentation = await Presentation.findOneAndUpdate(
       { _id: presentationId, owner: userId },
       { isPresent: isPresent },
+      { new: true }
+    );
+    callbacks?.success(presentation);
+    return presentation;
+  } catch (error) {
+    callbacks?.error(error);
+    throw error;
+  }
+};
+
+export const addCoOwner = async (presentationId, email, callbacks) => {
+  try {
+    const user = await findUserByEmail(email);
+
+    if (user === null) {
+      callbacks.error();
+    }
+
+    const presentation = await Presentation.findOneAndUpdate(
+      { _id: presentationId },
+      { $push: { "co-owner": user._id } },
+      { new: true }
+    );
+    callbacks?.success(presentation);
+    return presentation;
+  } catch (error) {
+    callbacks?.error(error);
+    throw error;
+  }
+};
+
+export const removeCoOwner = async (presentationId, userId, callbacks) => {
+  try {
+    const presentation = await Presentation.findOneAndUpdate(
+      { _id: presentationId },
+      { $pull: { "co-owner": userId } },
       { new: true }
     );
     callbacks?.success(presentation);

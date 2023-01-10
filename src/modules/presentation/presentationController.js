@@ -8,6 +8,8 @@ import {
   updatePresentationInfo,
   deletePresentation,
   updatePresentationIsPresent,
+  addCoOwner,
+  removeCoOwner,
 } from "./presentationModel";
 import { updateGroupIsPresent } from "../group/groupModel";
 import { generateCodeNumber } from "../../services/code";
@@ -367,6 +369,50 @@ export const putDisablePresent = async (req, res) => {
         res
           .status(500)
           .json({ success: false, message: "Internal server error" });},
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+export const postAddCollab = async (req, res) => {
+  const { id } = req.params;
+  const { email } = req.body;
+
+  try {
+    addCoOwner(id, email, {
+      success: (presentation) => {
+        res.status(200).json({ success: true, data: presentation });
+      },
+      error: (error) => {
+        console.log(error);
+        res
+          .status(500)
+          .json({ success: false, message: "Internal server error" });
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+export const postRemoveCollab = async (req, res) => {
+  const { id } = req.params;
+  const { userId } = req.body;
+
+  try {
+    removeCoOwner(id, userId, {
+      success: (presentation) => {
+        res.status(200).json({ success: true, data: presentation });
+      },
+      error: (error) => {
+        console.log(error);
+        res
+          .status(500)
+          .json({ success: false, message: "Internal server error" });
+      },
     });
   } catch (error) {
     console.log(error);
