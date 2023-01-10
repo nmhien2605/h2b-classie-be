@@ -101,16 +101,37 @@ function onConnection(socket) {
     console.log(socket.id + " disconnected");
   });
 
-  socket.on("req-join-room", (room) => {
+  socket.on("req-join-room", (room, user) => {
     const index = data.findIndex((item) => item.room === room);
     if (index !== -1) {
-      socket.join(room);
-      console.log(socket.id + " joined " + room);
-      io.to(socket.id).emit("res-join-room", {
-        success: true,
-        data: data[index].presentation,
-        current: data[index].current,
-      });
+      var success = true;
+      if (!data[index].presentation.isPublic) {
+        if (!user) {
+          success = false;
+        } else {
+          const check = data[index].presentation.groups[0].members.find(
+            (member) => member.detail.toString() === user._id
+          );
+          console.log("check", check);
+          if (!check) {
+            success = false;
+          }
+        }
+      }
+      if (!success) {
+        io.to(socket.id).emit("res-join-room", {
+          success: false,
+          message: "join failed",
+        });
+      } else {
+        socket.join(room);
+        console.log(socket.id + " joined " + room);
+        io.to(socket.id).emit("res-join-room", {
+          success: true,
+          data: data[index].presentation,
+          current: data[index].current,
+        });
+      }
     } else {
       io.to(socket.id).emit("res-join-room", {
         success: false,
