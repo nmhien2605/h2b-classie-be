@@ -251,6 +251,9 @@ export const checkEnablePresent = async (req, res) => {
   try {
     findPresentationGroupById(id, {
       success: (presentation) => {
+        if (presentation.isPresent) {
+          return res.status(200).json({ success: true, message: "Enable true" });
+        }
         if (!presentation.isPublic && presentation.groups[0].isPresent) {
           return res
             .status(200)
