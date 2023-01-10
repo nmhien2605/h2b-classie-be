@@ -17,6 +17,7 @@ const schema = new Schema(
         _id: false,
       },
     ],
+    isPresent: { type: Schema.Types.Boolean, default: false, require: true },
   },
   { timestamps: true }
 );
@@ -165,7 +166,6 @@ export const updateMemberStatus = async (groupId, memberInfo, callbacks) => {
   }
 };
 
-
 /**
  *
  * @param {ObjectId} memberId
@@ -198,6 +198,27 @@ export const findGroupById = async (groupId, userId, callbacks) => {
       _id: groupId,
       members: { $elemMatch: { detail: userId } },
     }).populate("members.detail");
+    callbacks?.success(group);
+    return group;
+  } catch (error) {
+    callbacks?.error(error);
+    throw error;
+  }
+};
+
+/**
+ * @param {ObjectId} groupId
+ * @param {boolean} isPresent
+ * @param {{success: (data) => void, error: (e) => void}} callbacks
+ * @returns updated group info
+ */
+export const updateGroupIsPresent = async (groupId, isPresent, callbacks) => {
+  try {
+    const group = await Group.findOneAndUpdate(
+      { _id: groupId },
+      { isPresent: isPresent },
+      { new: true }
+    );
     callbacks?.success(group);
     return group;
   } catch (error) {

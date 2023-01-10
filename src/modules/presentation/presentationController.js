@@ -1,5 +1,6 @@
 import {
   findPresentationById,
+  findPresentationGroupById,
   findPresentationByCode,
   findPresentationByUserId,
   findPresentationByGroupId,
@@ -8,6 +9,7 @@ import {
   deletePresentation,
   updatePresentationIsPresent,
 } from "./presentationModel";
+import { updateGroupIsPresent } from "../group/groupModel";
 import { generateCodeNumber } from "../../services/code";
 import { FIRST_SLIDE } from "../../constants";
 
@@ -97,7 +99,9 @@ export const getOneByCode = async (req, res) => {
           if (presentation.isPresent) {
             return res.status(200).json({ success: true, data: presentation });
           } else {
-            return res.status(200).json({ success: false, message: "Presentation is not present" });
+            return res
+              .status(200)
+              .json({ success: false, message: "Presentation is not present" });
           }
         }
       },
@@ -125,7 +129,7 @@ export const getAllByGroupId = async (req, res) => {
   const userId = req.id;
 
   try {
-    console.log(group)
+    console.log(group);
     findPresentationByGroupId(group, {
       success: (presentations) => {
         return res.status(200).json({ success: true, data: presentations });
@@ -234,6 +238,38 @@ export const deleteRemove = async (req, res) => {
 };
 
 /**
+ * GET Check Presentation can present
+ * @param req
+ * @param res
+ * @returns void
+ */
+export const checkEnablePresent = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    findPresentationGroupById(id, {
+      success: (presentation) => {
+        if (!presentation.isPublic && presentation.groups[0].isPresent) {
+          return res
+            .status(200)
+            .json({ success: false, message: "Enable false" });
+        }
+        return res.status(200).json({ success: true, message: "Enable true" });
+      },
+      error: (error) => {
+        console.log(error);
+        res
+          .status(500)
+          .json({ success: false, message: "Internal server error" });
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+/**
  * PUT Update Presentation
  * @param req
  * @param res
@@ -244,9 +280,38 @@ export const putEnablePresent = async (req, res) => {
   const userId = req.id;
 
   try {
-    updatePresentationIsPresent(id, userId, true, {
+    findPresentationGroupById(id, {
       success: (presentation) => {
-        res.status(200).json({ success: true, data: presentation });
+        if (presentation.isPresent) {
+          return res.status(200).json({ success: true, data: presentation });
+        }
+        if (!presentation.isPublic && presentation.groups[0].isPresent) {
+          return res
+            .status(200)
+            .json({ success: false, message: "Enable false" });
+        }
+        updatePresentationIsPresent(id, userId, true, {
+          success: (data) => {
+            if (data.groups[0]) {
+              updateGroupIsPresent(data.groups[0]._id, true, {
+                success: (group) => {},
+                error: (error) => {
+                  console.log(error);
+                  return res
+                    .status(500)
+                    .json({ success: false, message: "Internal server error" });
+                },
+              });
+            }
+            return res.status(200).json({ success: true, data });
+          },
+          error: (error) => {
+            console.log(error);
+            return res
+              .status(500)
+              .json({ success: false, message: "Internal server error" });
+          },
+        });
       },
       error: (error) => {
         console.log(error);
@@ -272,16 +337,36 @@ export const putDisablePresent = async (req, res) => {
   const userId = req.id;
 
   try {
-    updatePresentationIsPresent(id, userId, false, {
+    findPresentationGroupById(id, {
       success: (presentation) => {
-        res.status(200).json({ success: true, data: presentation });
+        updatePresentationIsPresent(id, userId, false, {
+          success: (data) => {
+            if (data.groups[0]) {
+              updateGroupIsPresent(data.groups[0]._id, false, {
+                success: (group) => {},
+                error: (error) => {
+                  console.log(error);
+                  return res
+                    .status(500)
+                    .json({ success: false, message: "Internal server error" });
+                },
+              });
+            }
+            return res.status(200).json({ success: true, data });
+          },
+          error: (error) => {
+            console.log(error);
+            return res
+              .status(500)
+              .json({ success: false, message: "Internal server error" });
+          },
+        });
       },
       error: (error) => {
         console.log(error);
         res
           .status(500)
-          .json({ success: false, message: "Internal server error" });
-      },
+          .json({ success: false, message: "Internal server error" });},
     });
   } catch (error) {
     console.log(error);
