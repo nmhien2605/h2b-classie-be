@@ -13,14 +13,14 @@ const groupsRouter = require('./routes/groups');
 const presentationsRouter = require('./routes/presentations')
 const { default: useDatabase } = require('./services/database');
 
-// const corsOptions = {
-//   origin: `${process.env.CLIENT_DOMAIN}`,
-//   credentials: true,
-//   optionSuccessStatus: 200,
-// }
+const corsOptions = {
+  origin: true,
+  credentials: true,
+  optionSuccessStatus: 200,
+}
 
 const app = express();
-app.use(cors());
+app.use(cors(corsOptions));
 
 require("./modules/auth/auth.mdw");
 
