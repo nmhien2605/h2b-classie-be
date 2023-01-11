@@ -54,12 +54,15 @@ passport.deserializeUser((user, done) => {
 });
 export const isUserAuthenticated = async (req, res, next) => {
 
-    console.log(req.cookies);
-    if (req.cookies.accessToken) {
-        const jwt = req.cookies.accessToken;
+    //console.log();
+    const headersToken = req.headers.authorization
+    const token = headersToken && headersToken.split(' ')[1];
+    if (token) {
+        const jwt = token;
         try {
             const userInfo = await decodeToken(jwt, process.env.ACCESS_TOKEN_SECRET)
             const { id, email } = userInfo.payload;
+            console.log(id);
             req.id = id;
             req.email = email;
             next();

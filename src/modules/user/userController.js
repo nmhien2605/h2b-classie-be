@@ -6,7 +6,7 @@ const { decodeToken } = require("../auth/authController");
 const { updateUserInfo } = require("./userModel");
 
 export const getUserInfo = async (req, res) => {
-    const user = await findUserById(req.cookies.id);
+    const user = await findUserById(req.id);
     if (!user) {
         return res.status(401).send({ message: "User không tồn tại", success: false });
     }
