@@ -49,13 +49,14 @@ export const findPresentationById = async (presentationId, callbacks) => {
 
 /**
  * @param {ObjectId} presentationId
+ * @param {ObjectId} userId
  * @param {{success: (data) => void, error: (e) => void}} callbacks
  * @returns find presentation info
  */
-export const findPresentationGroupById = async (presentationId, callbacks) => {
+export const findPresentationGroupById = async (presentationId, userId, callbacks) => {
   try {
     const presentation = await Presentation.findOne({
-      _id: presentationId,
+      _id: presentationId, $or: [{ owner: userId }, { "co-owner": { $elemMatch: { $eq: userId }}}]
     }).populate("groups");
     callbacks?.success(presentation);
     return presentation;
@@ -209,7 +210,7 @@ export const updatePresentationIsPresent = async (
 ) => {
   try {
     const presentation = await Presentation.findOneAndUpdate(
-      { _id: presentationId, owner: userId },
+      { _id: presentationId, $or: [{ owner: userId }, { "co-owner": { $eq: userId } }] },
       { isPresent: isPresent },
       { new: true }
     );
