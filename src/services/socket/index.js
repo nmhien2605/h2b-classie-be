@@ -69,6 +69,7 @@ function onConnection(socket) {
             room,
             presentation,
             questions: [],
+            vote: presentation.slides.map(() => []),
             current: 0,
           });
           io.emit("start-present", presentation);
@@ -136,6 +137,7 @@ function onConnection(socket) {
           success: true,
           data: data[index].presentation,
           current: data[index].current,
+          vote: data[index].vote,
         });
       }
     } else {
@@ -146,12 +148,23 @@ function onConnection(socket) {
     }
   });
 
-  socket.on("req-vote-room", (room, vote) => {
+  socket.on("req-vote-room", (room, user, vote) => {
     console.log(socket.id + " vote " + room, vote);
     const index = data.findIndex((item) => item.room === room);
     if (index !== -1) {
       data[index].presentation.slides[vote.slide].detail.values[vote.vote]++;
-      io.to(room).emit("res-vote-room", data[index].presentation);
+      data[index].vote[vote.slide].push(user.id);
+      io.to(room).emit("res-vote-room", { presentation: data[index].presentation, vote: data[index].vote });
+    }
+  });
+
+  socket.on("req-prev-slide", (room) => {
+    console.log(room + "prev");
+    const index = data.findIndex((item) => item.room === room);
+    if (index !== -1) {
+      updatePresentation(index);
+      data[index].current--;
+      io.to(room).emit("res-next-slide", data[index].current);
     }
   });
 
