@@ -4,7 +4,7 @@
   "private": true,
   "main": "index.js",
   "scripts": {
-    "start": "node ./index.js",
+    "start": "babel-node index.js",
     "start-dev": "NODE_ENV=development & nodemon --exec babel-node index.js",
     "lintfix": "eslint src --fix --cache"
   },
