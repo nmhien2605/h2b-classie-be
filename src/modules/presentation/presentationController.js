@@ -249,8 +249,13 @@ export const checkEnablePresent = async (req, res) => {
   const { id } = req.params;
 
   try {
-    findPresentationGroupById(id, {
+    findPresentationGroupById(id, req.id, {
       success: (presentation) => {
+        if (!presentation) {
+          return res
+            .status(200)
+            .json({ success: false, message: "Enable false" });
+        }
         if (presentation.isPresent) {
           return res.status(200).json({ success: true, message: "Enable true" });
         }
@@ -285,8 +290,13 @@ export const putEnablePresent = async (req, res) => {
   const userId = req.id;
 
   try {
-    findPresentationGroupById(id, {
+    findPresentationGroupById(id, req.id, {
       success: (presentation) => {
+        if (!presentation) {
+          return res
+            .status(200)
+            .json({ success: false, message: "Enable false" });
+        }
         if (presentation.isPresent) {
           return res.status(200).json({ success: true, data: presentation });
         }
@@ -297,6 +307,7 @@ export const putEnablePresent = async (req, res) => {
         }
         updatePresentationIsPresent(id, userId, true, {
           success: (data) => {
+            console.log(data)
             if (data.groups[0]) {
               updateGroupIsPresent(data.groups[0]._id, true, {
                 success: (group) => {},
@@ -342,8 +353,13 @@ export const putDisablePresent = async (req, res) => {
   const userId = req.id;
 
   try {
-    findPresentationGroupById(id, {
+    findPresentationGroupById(id, req.id, {
       success: (presentation) => {
+        if (!presentation) {
+          return res
+            .status(200)
+            .json({ success: false, message: "Disable false" });
+        }
         updatePresentationIsPresent(id, userId, false, {
           success: (data) => {
             if (data.groups[0]) {
