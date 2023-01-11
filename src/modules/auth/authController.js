@@ -123,7 +123,8 @@ export const loginDefault = async (req, res) => {
     res.cookie('email', user.email);
     return res.status(200).send({
         message: 'Đăng nhập thành công.',
-        // user: userInfo
+        accessToken,
+        id: user._id
     });
 }
 export const loginGoogle = async (req, res) => {
