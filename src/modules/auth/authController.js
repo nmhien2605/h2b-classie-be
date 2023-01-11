@@ -142,12 +142,12 @@ export const loginGoogle = async (req, res) => {
             .send({ message: 'Đăng nhập không thành công, vui lòng thử lại.' });
     }
 
-    res.cookie('accessToken', accessToken);
-    res.cookie('id', req.user._id);
-    res.cookie('displayName', req.user.name);
-    res.cookie('email', req.user.email);
+    // res.cookie('accessToken', accessToken);
+    // res.cookie('id', req.user._id);
+    // res.cookie('displayName', req.user.name);
+    // res.cookie('email', req.user.email);
 
-    return res.redirect(`${clientURL}/getinfo`);
+    return res.redirect(`${clientURL}/google-info?token=${accessToken}`);
 }
 export const logout = async (req, res) => {
     if (req.cookies) {
