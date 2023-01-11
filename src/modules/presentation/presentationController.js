@@ -156,7 +156,7 @@ export const getAllByGroupId = async (req, res) => {
  * @returns void
  */
 export const postCreate = async (req, res) => {
-  const { name } = req.body;
+  const { name, isPublic, groups } = req.body;
   const userId = req.id;
 
   try {
@@ -166,7 +166,8 @@ export const postCreate = async (req, res) => {
         name,
         code: generateCodeNumber(8),
         owner: userId,
-        groups: [],
+        groups,
+        isPublic,
       },
       {
         success: (presentation) => {
